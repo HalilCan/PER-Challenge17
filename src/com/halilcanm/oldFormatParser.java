@@ -1,48 +1,36 @@
 package com.halilcanm;
 
-import java.util.*;
 import java.io.File;
+import java.util.*;
 
-public class csvParser {
-    private static final char DEFAULT_SEPARATOR = ',';
+public class oldFormatParser {
+    private static final char DEFAULT_SEPARATOR = ' ';
     private static Hashtable idTable = new Hashtable<String, String>();
     private static LinkedList<List<String>> data = new LinkedList<List<String>>();
     //linkedlist because it's faster to add a new element
 
     public static void main(String ... args) throws Exception {
-        String csvFile ="end2016.csv";
+        String oldFile ="20150620_13_59_09_349_0_old";
 
-        Scanner scanner = new Scanner(new File(csvFile));
+        Scanner scanner = new Scanner(new File(oldFile));
         while (scanner.hasNext()) {
             List<String> line = parseLine(scanner.nextLine());
             if (line != null && !line.isEmpty()) {
-                //System.out.println("Timestamp= " + line.get(0) + ", id= " + line.get(1) + ", val = " + line.get(2));
-                data.add(line);
+                System.out.println("Timestamp= " + line.get(0) + ", id= " + line.get(1) + ", val = " + line.get(2));
+                //data.add(line);
                 }
             }
         scanner.close();
         // Working getByID example: System.out.println(getByID("89"));
-        getSpeedData();
-        getPowerData();
+        //getSpeedData();
+        //getPowerData();
     }
 
-    private Hashtable genTermDict() {
-        Hashtable semiConductorTerms = new Hashtable<String, String>();
-        semiConductorTerms.put ("PCM", "pulse-code modulation");
-        semiConductorTerms.put ("CHG", "");
-        semiConductorTerms.put ("MOC", "model of computation");
-        semiConductorTerms.put ("AMS", "analog/mixed signal");
-        semiConductorTerms.put ("IMD", "intermetal dielectric");
-        semiConductorTerms.put ("TEL", "telecommunication?");
-        semiConductorTerms.put ("DIC", "Differential interference contrast");
 
-        return semiConductorTerms;
-    }
-
-    public static String resolveID (String key) {
+    /*public static String resolveID (String key) {
         //Keys need to have leading spaces right now
         return idTable.get(key).toString();
-    }
+    } */
 
     public static List<String> parseLine (String cvsLine) {
         return parseLine(cvsLine, DEFAULT_SEPARATOR);
@@ -240,9 +228,6 @@ public class csvParser {
         for (char ch : chars) {
             if (!inline) {
                 if (Character.isLetter(ch)) {
-                    if (ch == 'V') {
-                        collectingIDs = true;
-                    }
                     if (ch == 'P') {
                         collectingHeader = true;
                     }
@@ -250,24 +235,6 @@ public class csvParser {
                     collectingData = true;
                 }
                 inline = true;
-            }
-
-            if (collectingIDs) {
-                if (ch != idSeparator && ch != '\n' && ch != '\r') {
-                    cur.append(ch);
-                } else if (ch == idSeparator) {
-                    //char[] idTag = Arrays.copyOfRange(cur.toString().toCharArray(), 6, cur.length()-1);
-                    currentId = cur.toString();
-                    cur = new StringBuffer();
-                } else if (ch == '\r') {
-                    continue;
-                } else if (ch == '\n') {
-                    currentId = "";
-                    currentIdVal = "";
-                    break;
-                } else {
-                    cur.append(ch);
-                }
             }
 
             if (collectingHeader) {
