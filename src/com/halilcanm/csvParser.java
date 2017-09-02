@@ -82,8 +82,8 @@ public class csvParser {
             prevPower = power;
         }
 
-        Double totalPower = sumAll(trapezoids) / 1000.0;
-        System.out.println("Total Power= " + totalPower);
+        Double totalPower = sumAll(trapezoids) / 1000000000.0;
+        System.out.println("Total Power kWH= " + totalPower);
     }
 
     public static Double sumAll(LinkedList<Double> traps) {
@@ -120,7 +120,7 @@ public class csvParser {
 
         Double avgSpeedF0 = cumulativeSpeedF0 / (speedListFront0.size());
 
-        System.out.println("Average front-0 mph = " + avgSpeedF0);
+        System.out.println("Average front-0 mph= " + avgSpeedF0);
         System.out.println("Minimum front-0 mph= " + minSpeedF0);
         System.out.println("Maximum front-0 mph= " + maxSpeedF0);
 
@@ -145,7 +145,7 @@ public class csvParser {
 
         Double avgSpeedF1 = cumulativeSpeedF1 / (speedListFront1.size());
 
-        System.out.println("Average front-1 mph = " + avgSpeedF1);
+        System.out.println("Average front-1 mph= " + avgSpeedF1);
         System.out.println("Minimum front-1 mph= " + minSpeedF1);
         System.out.println("Maximum front-1 mph= " + maxSpeedF1);
         System.out.println("");
@@ -195,7 +195,7 @@ public class csvParser {
 
         Double avgSpeedR1 = cumulativeSpeedR1 / (speedListRear1.size());
 
-        System.out.println("Average rear-1 mph = " + avgSpeedR1);
+        System.out.println("Average rear-1 mph= " + avgSpeedR1);
         System.out.println("Minimum rear-1 mph= " + minSpeedR1);
         System.out.println("Maximum rear-1 mph= " + maxSpeedR1);
     }
