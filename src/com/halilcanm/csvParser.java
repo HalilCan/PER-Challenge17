@@ -6,18 +6,24 @@ import java.io.File;
 public class csvParser {
     private static final char DEFAULT_SEPARATOR = ',';
     private static Hashtable idTable = new Hashtable<String, String>();
+    private static LinkedList<List<String>> data = new LinkedList<List<String>>();
+    //linkedlist because it's faster to add a new element
 
     public static void main(String ... args) throws Exception {
-        String csvFile = "acc2016.csv";
+        String csvFile ="end2016.csv";
 
         Scanner scanner = new Scanner(new File(csvFile));
         while (scanner.hasNext()) {
             List<String> line = parseLine(scanner.nextLine());
             if (line != null && !line.isEmpty()) {
                 //System.out.println("Timestamp= " + line.get(0) + ", id= " + line.get(1) + ", val = " + line.get(2));
+                data.add(line);
                 }
             }
         scanner.close();
+        // Working getByID example: System.out.println(getByID("89"));
+        getSpeedData();
+        getPowerData();
     }
 
     private Hashtable genTermDict() {
@@ -38,10 +44,170 @@ public class csvParser {
         return idTable.get(key).toString();
     }
 
-
-
     public static List<String> parseLine (String cvsLine) {
         return parseLine(cvsLine, DEFAULT_SEPARATOR);
+    }
+
+    public static void getPowerData() {
+        String currentAddress = "170";
+        String voltageAddress = "172";
+        String powerAddress = "173";
+
+        Double init_power = 0.0;
+        Double initial_time_difference = 0.0;
+
+        LinkedList<List<String>> powerList = getByID("173");
+        LinkedList<Double> numPowerList = new LinkedList<>();
+        LinkedList<Double> numTimeDifferenceList = new LinkedList<>();
+        LinkedList<Double> trapezoids = new LinkedList<>();
+
+        Double prevPower = 0.0;
+
+        for (List<String> line : powerList) {
+            Double power = Double.parseDouble(line.get(2));
+            Double absTime = Double.parseDouble(line.get(0));
+            Double timeDiff = 0.0;
+
+            numPowerList.add(power);
+
+            if (numTimeDifferenceList.size() < 1 || numTimeDifferenceList.isEmpty()) {
+                numTimeDifferenceList.add(absTime);
+                timeDiff = absTime;
+            } else {
+                timeDiff = absTime - numTimeDifferenceList.get(numTimeDifferenceList.size()-1);
+                numTimeDifferenceList.add(timeDiff);
+            }
+
+            trapezoids.add(((power - prevPower) * timeDiff / 2.0) + (prevPower * timeDiff / 2));
+            prevPower = power;
+        }
+
+        Double totalPower = sumAll(trapezoids) / 1000.0;
+        System.out.println("Total Power= " + totalPower);
+    }
+
+    public static Double sumAll(LinkedList<Double> traps) {
+        Double sum = 0.0;
+        for (Double trap : traps) {
+            sum = sum + trap;
+        }
+        return sum;
+    }
+
+    public static void getSpeedData() {
+        LinkedList<List<String>> speedListFront0 = getByID("95");
+        LinkedList<List<String>> speedListFront1 = getByID("96");
+        LinkedList<List<String>> speedListRear0 = getByID("97");
+        LinkedList<List<String>> speedListRear1 = getByID("98");
+
+        LinkedList<Double> numericSpeedListF0 = new LinkedList<Double>();
+
+        Double minSpeedF0 = 100000.0;
+        Double maxSpeedF0 = 0.0;
+        Double cumulativeSpeedF0 = 0.0;
+
+        for (List<String> msg : speedListFront0) {
+            Double speed = Double.parseDouble(msg.get(2));
+            if (speed < minSpeedF0 && speed > 0.0) {
+                minSpeedF0 = speed;
+            }
+            if (speed > maxSpeedF0) {
+                maxSpeedF0 = speed;
+            }
+            cumulativeSpeedF0 = cumulativeSpeedF0 + speed;
+            numericSpeedListF0.add(speed);
+        }
+
+        Double avgSpeedF0 = cumulativeSpeedF0 / (speedListFront0.size());
+
+        System.out.println("Average front-0 mph = " + avgSpeedF0);
+        System.out.println("Minimum front-0 mph= " + minSpeedF0);
+        System.out.println("Maximum front-0 mph= " + maxSpeedF0);
+
+
+        LinkedList<Double> numericSpeedListF1 = new LinkedList<Double>();
+
+        Double minSpeedF1= 100000.0;
+        Double maxSpeedF1 = 0.0;
+        Double cumulativeSpeedF1 = 0.0;
+
+        for (List<String> msg : speedListFront1) {
+            Double speed = Double.parseDouble(msg.get(2));
+            if (speed < minSpeedF1 && speed > 0.0) {
+                minSpeedF1 = speed;
+            }
+            if (speed > maxSpeedF1) {
+                maxSpeedF1 = speed;
+            }
+            cumulativeSpeedF1 = cumulativeSpeedF1 + speed;
+            numericSpeedListF1.add(speed);
+        }
+
+        Double avgSpeedF1 = cumulativeSpeedF1 / (speedListFront1.size());
+
+        System.out.println("Average front-1 mph = " + avgSpeedF1);
+        System.out.println("Minimum front-1 mph= " + minSpeedF1);
+        System.out.println("Maximum front-1 mph= " + maxSpeedF1);
+        System.out.println("");
+
+
+        LinkedList<Double> numericSpeedListR0 = new LinkedList<Double>();
+
+        Double minSpeedR0= 100000.0;
+        Double maxSpeedR0 = 0.0;
+        Double cumulativeSpeedR0 = 0.0;
+
+        for (List<String> msg : speedListRear0) {
+            Double speed = Double.parseDouble(msg.get(2));
+            if (speed < minSpeedR0 && speed > 0.0) {
+                minSpeedR0 = speed;
+            }
+            if (speed > maxSpeedR0) {
+                maxSpeedR0 = speed;
+            }
+            cumulativeSpeedR0 = cumulativeSpeedR0 + speed;
+            numericSpeedListR0.add(speed);
+        }
+
+        Double avgSpeedR0 = cumulativeSpeedR0 / (speedListRear0.size());
+
+        System.out.println("Average rear-0 mph = " + avgSpeedR0);
+        System.out.println("Minimum rear-0 mph= " + minSpeedR0);
+        System.out.println("Maximum rear-0 mph= " + maxSpeedR0);
+
+        LinkedList<Double> numericSpeedListR1 = new LinkedList<Double>();
+
+        Double minSpeedR1= 100000.0;
+        Double maxSpeedR1 = 0.0;
+        Double cumulativeSpeedR1 = 0.0;
+
+        for (List<String> msg : speedListRear1) {
+            Double speed = Double.parseDouble(msg.get(2));
+            if (speed < minSpeedR1 && speed > 0.0) {
+                minSpeedR1 = speed;
+            }
+            if (speed > maxSpeedR1) {
+                maxSpeedR1 = speed;
+            }
+            cumulativeSpeedR1 = cumulativeSpeedR1 + speed;
+            numericSpeedListR1.add(speed);
+        }
+
+        Double avgSpeedR1 = cumulativeSpeedR1 / (speedListRear1.size());
+
+        System.out.println("Average rear-1 mph = " + avgSpeedR1);
+        System.out.println("Minimum rear-1 mph= " + minSpeedR1);
+        System.out.println("Maximum rear-1 mph= " + maxSpeedR1);
+    }
+
+    public static LinkedList<List<String>> getByID(String id) {
+        LinkedList<List<String>> sortedList = new LinkedList<List<String>>();
+        for (List<String> line: data) {
+            if (line.get(1).equals(id)) {
+                sortedList.add(line);
+            }
+        }
+        return sortedList;
     }
 
     public static  List<String> parseLine(String cvsLine, char separator) {
@@ -145,11 +311,6 @@ public class csvParser {
         if (collectingData) {
             result.add(cur.toString());
         }
-        /*System.out.println("collectingIDs = " + collectingIDs);
-        System.out.println("collectingData = " + collectingData);
-        System.out.println("collectingHeader = " + collectingHeader);
-        System.out.println("line = " + cvsLine);
-        System.out.println("result = " + result);*/
 
         return result;
     }
