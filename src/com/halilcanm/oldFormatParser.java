@@ -11,7 +11,7 @@ import static java.lang.Math.toIntExact;
 public class oldFormatParser {
     private static final char DEFAULT_SEPARATOR = ' ';
     private static Hashtable idTable = new Hashtable<String, String>();
-    private static LinkedList<List<String>> data = new LinkedList<List<String>>();
+    private static LinkedList<LinkedList<String>> data = new LinkedList<LinkedList<String>>();
     //linkedlist because it's faster to add a new element
 
     public static void main(String ... args) throws Exception {
@@ -19,7 +19,7 @@ public class oldFormatParser {
 
         Scanner scanner = new Scanner(new File(oldFile));
         while (scanner.hasNext()) {
-            List<String> line = parseLine(scanner.nextLine());
+            LinkedList<String> line = parseLine(scanner.nextLine());
             if (line != null && !line.isEmpty()) {
                 //System.out.println("Timestamp= " + line.get(0) + ", id= " + line.get(2) + line.get(1) + ", bytecount=
                 // " + line.get(3) + "val = " + line.get(4));
@@ -28,8 +28,10 @@ public class oldFormatParser {
             }
         scanner.close();
         // Working getByID example: System.out.println(getByID("0x222"));
-        // (so far) working parseHex example: System.out.println(parseLittleEndian("[ 136, 226, 10, 68, 82, 161, 2,
-        // 68]"));
+        // Working parseLittleEndian example: System.out.println(parseLittleEndian("[ 136, 226, 10, 68, 82,
+        // 161, 2, 68]"));
+        // Working getById to get data: System.out.println(getByID("0x222").getLast().get(4));
+        // Working getById + parseL.E. System.out.println(parseLittleEndian(getByID("0x222").get(2090).get(4)));
     }
 
     public static ArrayList<Double> parseLittleEndian(String endian) {
@@ -111,7 +113,6 @@ public class oldFormatParser {
         return result;
     }
 
-
     /*public static String resolveID (String key) {
         //Keys need to have leading spaces right now
         return idTable.get(key).toString();
@@ -125,7 +126,7 @@ public class oldFormatParser {
         return tireCircumferenceMiles * RPM * 60;
     }
 
-    public static List<String> parseLine (String cvsLine) {
+    public static LinkedList<String> parseLine (String cvsLine) {
         return parseLine(cvsLine, DEFAULT_SEPARATOR);
     }
 
@@ -176,11 +177,10 @@ public class oldFormatParser {
         return sum;
     }
 
+
     public static void getSpeedData() {
         LinkedList<List<String>> speedListFront0 = getByID("95");
         LinkedList<List<String>> speedListFront1 = getByID("96");
-        LinkedList<List<String>> speedListRear0 = getByID("97");
-        LinkedList<List<String>> speedListRear1 = getByID("98");
 
         LinkedList<Double> numericSpeedListF0 = new LinkedList<Double>();
 
@@ -231,60 +231,11 @@ public class oldFormatParser {
         System.out.println("Minimum front-1 mph= " + minSpeedF1);
         System.out.println("Maximum front-1 mph= " + maxSpeedF1);
         System.out.println("");
-
-
-        LinkedList<Double> numericSpeedListR0 = new LinkedList<Double>();
-
-        Double minSpeedR0= 100000.0;
-        Double maxSpeedR0 = 0.0;
-        Double cumulativeSpeedR0 = 0.0;
-
-        for (List<String> msg : speedListRear0) {
-            Double speed = Double.parseDouble(msg.get(2));
-            if (speed < minSpeedR0 && speed > 0.0) {
-                minSpeedR0 = speed;
-            }
-            if (speed > maxSpeedR0) {
-                maxSpeedR0 = speed;
-            }
-            cumulativeSpeedR0 = cumulativeSpeedR0 + speed;
-            numericSpeedListR0.add(speed);
-        }
-
-        Double avgSpeedR0 = cumulativeSpeedR0 / (speedListRear0.size());
-
-        System.out.println("Average rear-0 mph = " + avgSpeedR0);
-        System.out.println("Minimum rear-0 mph= " + minSpeedR0);
-        System.out.println("Maximum rear-0 mph= " + maxSpeedR0);
-
-        LinkedList<Double> numericSpeedListR1 = new LinkedList<Double>();
-
-        Double minSpeedR1= 100000.0;
-        Double maxSpeedR1 = 0.0;
-        Double cumulativeSpeedR1 = 0.0;
-
-        for (List<String> msg : speedListRear1) {
-            Double speed = Double.parseDouble(msg.get(2));
-            if (speed < minSpeedR1 && speed > 0.0) {
-                minSpeedR1 = speed;
-            }
-            if (speed > maxSpeedR1) {
-                maxSpeedR1 = speed;
-            }
-            cumulativeSpeedR1 = cumulativeSpeedR1 + speed;
-            numericSpeedListR1.add(speed);
-        }
-
-        Double avgSpeedR1 = cumulativeSpeedR1 / (speedListRear1.size());
-
-        System.out.println("Average rear-1 mph= " + avgSpeedR1);
-        System.out.println("Minimum rear-1 mph= " + minSpeedR1);
-        System.out.println("Maximum rear-1 mph= " + maxSpeedR1);
     }
-    */
-    public static LinkedList<List<String>> getByID(String id) {
-        LinkedList<List<String>> sortedList = new LinkedList<List<String>>();
-        for (List<String> line: data) {
+*/
+    public static LinkedList<LinkedList<String>> getByID(String id) {
+        LinkedList<LinkedList<String>> sortedList = new LinkedList<LinkedList<String>>();
+        for (LinkedList<String> line: data) {
             if ((line.get(2)+line.get(1)).equals(id)) {
                 sortedList.add(line);
             }
@@ -292,8 +243,8 @@ public class oldFormatParser {
         return sortedList;
     }
 
-    public static  List<String> parseLine(String cvsLine, char separator) {
-        List<String> result = new ArrayList<>();
+    public static  LinkedList<String> parseLine(String cvsLine, char separator) {
+        LinkedList<String> result = new LinkedList<>();
         List<String> IDs = new ArrayList<>();
         List<String> header = new ArrayList<>();
 
