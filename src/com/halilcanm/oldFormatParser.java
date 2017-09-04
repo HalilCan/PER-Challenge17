@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.util.*;
 
 import static java.lang.Integer.parseUnsignedInt;
+import static java.lang.Math.PI;
 import static java.lang.Math.toIntExact;
 
 public class oldFormatParser {
@@ -27,8 +28,8 @@ public class oldFormatParser {
             }
         scanner.close();
         // Working getByID example: System.out.println(getByID("0x222"));
-
-        System.out.println(parseLittleEndian("[ 136, 226, 10, 68, 82, 161, 2, 68]"));
+        // (so far) working parseHex example: System.out.println(parseLittleEndian("[ 136, 226, 10, 68, 82, 161, 2,
+        // 68]"));
     }
 
     public static ArrayList<Double> parseLittleEndian(String endian) {
@@ -64,18 +65,37 @@ public class oldFormatParser {
                 }
             }
         }
+        int h1Count = 0;
 
         for (String extractedHex : extractedList) {
-            if (hex1.length() < 8) {
-                hex1 = hex1 + (Integer.parseInt(extractedHex,16));
+            String correctedHex = Integer.toHexString(Integer.valueOf(extractedHex));
+            if (correctedHex.length() == 1) {
+                correctedHex = "0" + correctedHex;
             }
-            if (hex1.length() == 8) {
-                hex2 = hex2 + (Integer.parseInt(extractedHex,16));
+            if (h1Count < 4) {
+                //System.out.println("raw1 = " + (Integer.valueOf(extractedHex)));
+                //System.out.println("hex1 = " + correctedHex);
+
+                hex1 = correctedHex + hex1;
             }
+            if (h1Count >= 4) {
+                //System.out.println("raw2 = " + (Integer.valueOf(extractedHex)));
+                //System.out.println("hex2 = " + correctedHex);
+
+                hex2 = correctedHex + hex2;
+            }
+            h1Count +=1;
         }
 
-        System.out.println(hex1);
-        System.out.println(hex2);
+        //System.out.println(hex1);
+        //System.out.println(hex2);
+
+        //switched order to big endian
+        /*Long testLong = Long.parseLong("4182b8d9", 16);
+        Float testFloat = Float.intBitsToFloat(testLong.intValue());
+        Double testDouble = (double) testFloat;
+        System.out.println("test= " + testDouble);
+        */
 
         Long l1 = Long.parseLong(hex1, 16);
         Float f1 = Float.intBitsToFloat(l1.intValue());
@@ -88,7 +108,6 @@ public class oldFormatParser {
             Double d2 = (double) f2;
             result.add(d2);
         }
-
         return result;
     }
 
