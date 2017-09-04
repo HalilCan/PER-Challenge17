@@ -48,6 +48,19 @@ public class csvParser {
         return parseLine(cvsLine, DEFAULT_SEPARATOR);
     }
 
+    public LinkedList<Double> getPowerFromVandI(LinkedList<Double> numCurrentList, LinkedList<Double> numVoltageList){
+        LinkedList<Double> numPowerList = new LinkedList<Double>();
+
+        while (numCurrentList.size() > 0) {
+            Double current = numCurrentList.removeFirst();
+            Double voltage = numVoltageList.removeFirst();
+            Double power = current * voltage;
+            numPowerList.add(power);
+        }
+
+        return numPowerList;
+    }
+
     public static void getPowerData() {
         String currentAddress = "170";
         String voltageAddress = "172";
@@ -57,33 +70,97 @@ public class csvParser {
         Double initial_time_difference = 0.0;
 
         LinkedList<List<String>> powerList = getByID("173");
+        LinkedList<List<String>> currentList = getByID("170");
+        LinkedList<List<String>> voltageList = getByID("172");
+
         LinkedList<Double> numPowerList = new LinkedList<>();
-        LinkedList<Double> numTimeDifferenceList = new LinkedList<>();
-        LinkedList<Double> trapezoids = new LinkedList<>();
+        LinkedList<Double> numCurrentList = new LinkedList<>();
+        LinkedList<Double> numVoltageList = new LinkedList<>();
 
-        Double prevPower = 0.0;
+        LinkedList<Double> numCTimeDifferenceList = new LinkedList<>();
+        LinkedList<Double> numVTimeDifferenceList = new LinkedList<>();
 
-        for (List<String> line : powerList) {
-            Double power = Double.parseDouble(line.get(2));
+        LinkedList<Double> currentTrapezoids = new LinkedList<>();
+        LinkedList<Double> voltageTrapezoids = new LinkedList<>();
+
+        Double prevCurrent = 0.0;
+
+        for (List<String> line : currentList) {
+            Double current = Double.parseDouble(line.get(2));
             Double absTime = Double.parseDouble(line.get(0));
             Double timeDiff = 0.0;
 
-            numPowerList.add(power);
+            numCurrentList.add(current);
 
-            if (numTimeDifferenceList.size() < 1 || numTimeDifferenceList.isEmpty()) {
-                numTimeDifferenceList.add(absTime);
+            if (numCTimeDifferenceList.size() < 1 || numCTimeDifferenceList.isEmpty()) {
+                numCTimeDifferenceList.add(absTime);
                 timeDiff = absTime;
             } else {
-                timeDiff = absTime - numTimeDifferenceList.get(numTimeDifferenceList.size()-1);
-                numTimeDifferenceList.add(timeDiff);
+                timeDiff = absTime - numCTimeDifferenceList.get(numCTimeDifferenceList.size()-1);
+                numCTimeDifferenceList.add(timeDiff);
             }
 
-            trapezoids.add(((power - prevPower) * timeDiff / 2.0) + (prevPower * timeDiff / 2));
-            prevPower = power;
+            currentTrapezoids.add(((current - prevCurrent) * timeDiff / 2.0) + (prevCurrent * timeDiff / 2));
+            prevCurrent = current;
         }
 
-        Double totalPower = sumAll(trapezoids) / 1000000000.0;
-        System.out.println("Total Power kWh= " + totalPower);
+        Double totalCurrent = sumAll(currentTrapezoids) / 1000000000.0;
+
+        Double prevVoltage = 0.0;
+
+        for (List<String> line : voltageList) {
+            Double voltage = Double.parseDouble(line.get(2));
+            Double absTime = Double.parseDouble(line.get(0));
+            Double timeDiff = 0.0;
+
+            numCurrentList.add(voltage);
+
+            if (numVTimeDifferenceList.size() < 1 || numVTimeDifferenceList.isEmpty()) {
+                numVTimeDifferenceList.add(absTime);
+                timeDiff = absTime;
+            } else {
+                timeDiff = absTime - numVTimeDifferenceList.get(numVTimeDifferenceList.size()-1);
+                numVTimeDifferenceList.add(timeDiff);
+            }
+
+            voltageTrapezoids.add(((voltage - prevVoltage) * timeDiff / 2.0) + (prevVoltage * timeDiff / 2));
+            prevVoltage = voltage;
+        }
+
+        Double totalVoltage = sumAll(voltageTrapezoids) / 1000000000.0;
+
+        Double totalPower = totalVoltage * totalCurrent / 1000.0;
+
+        System.out.println("Total integrated voltage= " + totalVoltage);
+        System.out.println("Total integrated current= " + totalCurrent);
+
+        System.out.println("Total Power (From V and I) kWh= " + totalPower);
+
+        LinkedList<Double> powerTrapezoids2 = new LinkedList<Double>();
+        Double prevPower2 = 0.0;
+
+        for (List<String> line : currentList) {
+            Double current = Double.parseDouble(line.get(2));
+            Double absTime = Double.parseDouble(line.get(0));
+            Double voltage = Double.parseDouble(voltageList.removeFirst().get(2));
+            Double power = current * voltage;
+            Double timeDiff = 0.0;
+
+            if (numCTimeDifferenceList.size() < 1 || numCTimeDifferenceList.isEmpty()) {
+                numCTimeDifferenceList.add(absTime);
+                timeDiff = absTime;
+            } else {
+                timeDiff = absTime - numCTimeDifferenceList.get(numCTimeDifferenceList.size()-1);
+                numCTimeDifferenceList.add(timeDiff);
+            }
+
+            powerTrapezoids2.add(((power - prevPower2) * timeDiff / 2.0) + (prevPower2 * timeDiff / 2));
+            prevPower2 = power;
+        }
+
+        Double totalPower2 = sumAll(powerTrapezoids2) / 1000000000000.0;
+
+        System.out.println("Total Power from node by node calculation kWh= " + totalPower2);
     }
 
     public static Double sumAll(LinkedList<Double> traps) {

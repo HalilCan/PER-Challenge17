@@ -16,12 +16,14 @@ public class oldFormatParser {
         while (scanner.hasNext()) {
             List<String> line = parseLine(scanner.nextLine());
             if (line != null && !line.isEmpty()) {
-                System.out.println("Timestamp= " + line.get(0) + ", id= " + line.get(1) + ", val = " + line.get(2));
-                //data.add(line);
+                //System.out.println("Timestamp= " + line.get(0) + ", id= " + line.get(2) + line.get(1) + ", bytecount=
+                // " + line.get(3) + "val = " + line.get(4));
+                data.add(line);
                 }
             }
         scanner.close();
-        // Working getByID example: System.out.println(getByID("89"));
+        // Working getByID example:
+        System.out.println(getByID("0x222"));
         //getSpeedData();
         //getPowerData();
     }
@@ -32,10 +34,19 @@ public class oldFormatParser {
         return idTable.get(key).toString();
     } */
 
+    public static Double RPMtoMPH (Double RPM) {
+        Double tireDiameterInches = 19.5;
+        Double tireCircumferenceInches = 122.5;
+        Double tireCircumferenceMiles = 0.0019334;
+
+        return tireCircumferenceMiles * RPM * 60;
+    }
+
     public static List<String> parseLine (String cvsLine) {
         return parseLine(cvsLine, DEFAULT_SEPARATOR);
     }
 
+    /*
     public static void getPowerData() {
         String currentAddress = "170";
         String voltageAddress = "172";
@@ -187,11 +198,11 @@ public class oldFormatParser {
         System.out.println("Minimum rear-1 mph= " + minSpeedR1);
         System.out.println("Maximum rear-1 mph= " + maxSpeedR1);
     }
-
+    */
     public static LinkedList<List<String>> getByID(String id) {
         LinkedList<List<String>> sortedList = new LinkedList<List<String>>();
         for (List<String> line: data) {
-            if (line.get(1).equals(id)) {
+            if ((line.get(2)+line.get(1)).equals(id)) {
                 sortedList.add(line);
             }
         }
@@ -207,18 +218,15 @@ public class oldFormatParser {
             return result;
         }
 
-        if (separator == ' ') {
-            separator = ',';
-        }
-
-        char idSeparator = ':';
-        char headerSeparator = ' ';
+        char dataSeparator = ' ';
+        char headerSeparator = '-';
 
         StringBuffer cur = new StringBuffer();
         boolean collectingData = false;
         boolean collectingIDs = false;
         boolean collectingHeader = false;
         boolean inline = false;
+        boolean inCurlies = false;
 
         String currentId = "";
         String currentIdVal = "";
@@ -255,7 +263,13 @@ public class oldFormatParser {
             if (collectingData) {
                 if (ch != separator && ch != '\n' && ch != '\r') {
                     cur.append(ch);
-                } else if (ch == separator) {
+                    if (ch == '[') {
+                        inCurlies = true;
+                    }
+                    if (ch == ']') {
+                        inCurlies = false;
+                    }
+                } else if (ch == separator && inCurlies == false) {
                     result.add(cur.toString());
                     cur = new StringBuffer();
                 } else if (ch == '\r') {
@@ -266,13 +280,6 @@ public class oldFormatParser {
                     cur.append(ch);
                 }
             }
-        }
-
-        if (collectingIDs) {
-            currentIdVal = cur.toString();
-            idTable.put(currentIdVal,currentId);
-            currentId = "";
-            currentIdVal = "";
         }
 
         if (collectingData) {
