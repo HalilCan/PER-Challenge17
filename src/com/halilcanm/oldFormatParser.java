@@ -25,13 +25,69 @@ public class oldFormatParser {
         scanner.close();
         // Working getByID example:
         System.out.println(getByID("0x222"));
-
-        byte[] b = new byte[]{217, 184, 130, 65};
-        float f = ByteBuffer.wrap(b).getFloat();
-        System.out.println();
+        String example_hex = Integer.toHexString(131);
+        int hex2 = 0x4182b8d9;
+        hex2 = Integer.parseInt("0x4182b8d9", 32);
+        float f = Float.intBitsToFloat(hex2);
+        Double d = (double) f;
+        System.out.println(f);
+        System.out.println(d);
+        System.out.printf("%f", f);
 
         //getSpeedData();
         //getPowerData();
+    }
+
+    public static ArrayList<Double> parseLittleEndian(String endian) {
+        ArrayList<Double> result = new ArrayList<Double>();
+        LinkedList<String> extractedList = new LinkedList<String>();
+
+        char separator = ',';
+        boolean capturing = false;
+
+        String hex1 = "";
+        String hex2 = "";
+
+        StringBuffer cur = new StringBuffer();
+
+        char[] chars = endian.toCharArray();
+
+        for (char ch : chars) {
+            if (!capturing) {
+                if (!Character.isLetter(ch) && ch != ',' && ch != ' ') {
+                    capturing = true;
+                }
+            }
+            if (capturing) {
+                if (ch == ',') {
+                    extractedList.add(cur.toString());
+                    cur = new StringBuffer();
+                    capturing = false;
+                } else if (ch == ']') {
+                    extractedList.add(cur.toString());
+                    capturing = false;
+                } else {
+                    cur.append(ch);
+                }
+            }
+        }
+
+        for (String extractedHex : extractedList) {
+            if (hex1.length() < 8) {
+                hex1 = hex1 + Integer.parseInt(extractedHex);
+            }
+            if (hex1.length() == 8) {
+                hex2 = hex2 + Integer.parseInt(extractedHex);
+            }
+        }
+        hex1 = "0x" + hex1;
+
+
+        if (hex2.length() > 0) {
+            hex2 = "0x" + hex2;
+        }
+
+        return result;
     }
 
 
