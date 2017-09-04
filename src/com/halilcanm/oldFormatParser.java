@@ -4,6 +4,9 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.*;
 
+import static java.lang.Integer.parseUnsignedInt;
+import static java.lang.Math.toIntExact;
+
 public class oldFormatParser {
     private static final char DEFAULT_SEPARATOR = ' ';
     private static Hashtable idTable = new Hashtable<String, String>();
@@ -23,19 +26,9 @@ public class oldFormatParser {
                 }
             }
         scanner.close();
-        // Working getByID example:
-        System.out.println(getByID("0x222"));
-        String example_hex = Integer.toHexString(131);
-        int hex2 = 0x4182b8d9;
-        hex2 = Integer.parseInt("0x4182b8d9", 32);
-        float f = Float.intBitsToFloat(hex2);
-        Double d = (double) f;
-        System.out.println(f);
-        System.out.println(d);
-        System.out.printf("%f", f);
+        // Working getByID example: System.out.println(getByID("0x222"));
 
-        //getSpeedData();
-        //getPowerData();
+        System.out.println(parseLittleEndian("[ 136, 226, 10, 68, 82, 161, 2, 68]"));
     }
 
     public static ArrayList<Double> parseLittleEndian(String endian) {
@@ -54,12 +47,12 @@ public class oldFormatParser {
 
         for (char ch : chars) {
             if (!capturing) {
-                if (!Character.isLetter(ch) && ch != ',' && ch != ' ') {
+                if (!Character.isLetter(ch) && ch != separator && ch != ' ' && ch != '[' && ch != ']') {
                     capturing = true;
                 }
             }
             if (capturing) {
-                if (ch == ',') {
+                if (ch == separator) {
                     extractedList.add(cur.toString());
                     cur = new StringBuffer();
                     capturing = false;
@@ -74,17 +67,26 @@ public class oldFormatParser {
 
         for (String extractedHex : extractedList) {
             if (hex1.length() < 8) {
-                hex1 = hex1 + Integer.parseInt(extractedHex);
+                hex1 = hex1 + (Integer.parseInt(extractedHex,16));
             }
             if (hex1.length() == 8) {
-                hex2 = hex2 + Integer.parseInt(extractedHex);
+                hex2 = hex2 + (Integer.parseInt(extractedHex,16));
             }
         }
-        hex1 = "0x" + hex1;
 
+        System.out.println(hex1);
+        System.out.println(hex2);
+
+        Long l1 = Long.parseLong(hex1, 16);
+        Float f1 = Float.intBitsToFloat(l1.intValue());
+        Double d1 = (double) f1;
+        result.add(d1);
 
         if (hex2.length() > 0) {
-            hex2 = "0x" + hex2;
+            Long l2 = Long.parseLong(hex2, 16);
+            Float f2 = Float.intBitsToFloat(l2.intValue());
+            Double d2 = (double) f2;
+            result.add(d2);
         }
 
         return result;
