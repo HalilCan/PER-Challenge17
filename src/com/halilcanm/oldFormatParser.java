@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.*;
 
+import static java.lang.Integer.max;
 import static java.lang.Integer.parseUnsignedInt;
 import static java.lang.Math.PI;
 import static java.lang.Math.toIntExact;
@@ -28,10 +29,11 @@ public class oldFormatParser {
             }
         scanner.close();
         // Working getByID example: System.out.println(getByID("0x222"));
-        // Working parseLittleEndian example: System.out.println(parseLittleEndian("[ 136, 226, 10, 68, 82,
-        // 161, 2, 68]"));
+        // Working parseLittleEndian example:
+        System.out.println("Previous example:" + parseLittleEndian("[ 217, 184, 130, 65, 122, 175, 137, 65]"));
         // Working getById to get data: System.out.println(getByID("0x222").getLast().get(4));
         // Working getById + parseL.E. System.out.println(parseLittleEndian(getByID("0x222").get(2090).get(4)));
+        getSpeedData();
     }
 
     public static ArrayList<Double> parseLittleEndian(String endian) {
@@ -177,62 +179,67 @@ public class oldFormatParser {
         return sum;
     }
 
-
+    */
     public static void getSpeedData() {
-        LinkedList<List<String>> speedListFront0 = getByID("95");
-        LinkedList<List<String>> speedListFront1 = getByID("96");
+        LinkedList<LinkedList<String>> speedList = getByID("0x222");
+        LinkedList<Double> speedLeft = new LinkedList<Double>();
+        LinkedList<Double> speedRight = new LinkedList<Double>();
 
-        LinkedList<Double> numericSpeedListF0 = new LinkedList<Double>();
+        for (LinkedList<String> speedData: speedList) {
+            speedLeft.add(parseLittleEndian(speedData.get(4)).get(0));
+            speedRight.add(parseLittleEndian(speedData.get(4)).get(1));
+        }
 
         Double minSpeedF0 = 100000.0;
         Double maxSpeedF0 = 0.0;
         Double cumulativeSpeedF0 = 0.0;
 
-        for (List<String> msg : speedListFront0) {
-            Double speed = Double.parseDouble(msg.get(2));
-            if (speed < minSpeedF0 && speed > 0.0) {
+        for (Double speed: speedLeft) {
+            if (speed < minSpeedF0 && speed > 0.1) {
                 minSpeedF0 = speed;
             }
             if (speed > maxSpeedF0) {
                 maxSpeedF0 = speed;
             }
-            cumulativeSpeedF0 = cumulativeSpeedF0 + speed;
-            numericSpeedListF0.add(speed);
+            if (speed > 0.0) {
+                cumulativeSpeedF0 = cumulativeSpeedF0 + speed;
+            }
         }
 
-        Double avgSpeedF0 = cumulativeSpeedF0 / (speedListFront0.size());
+        Double avgSpeedF0 = RPMtoMPH(cumulativeSpeedF0 / (speedLeft.size()));
+        maxSpeedF0 = RPMtoMPH(maxSpeedF0);
+        minSpeedF0 = RPMtoMPH(minSpeedF0);
 
         System.out.println("Average front-0 mph= " + avgSpeedF0);
         System.out.println("Minimum front-0 mph= " + minSpeedF0);
         System.out.println("Maximum front-0 mph= " + maxSpeedF0);
 
-
-        LinkedList<Double> numericSpeedListF1 = new LinkedList<Double>();
-
-        Double minSpeedF1= 100000.0;
+        Double minSpeedF1 = 100000.0;
         Double maxSpeedF1 = 0.0;
         Double cumulativeSpeedF1 = 0.0;
 
-        for (List<String> msg : speedListFront1) {
-            Double speed = Double.parseDouble(msg.get(2));
-            if (speed < minSpeedF1 && speed > 0.0) {
+        for (Double speed: speedRight) {
+            if (speed < minSpeedF1 && speed > 0.1) {
                 minSpeedF1 = speed;
             }
             if (speed > maxSpeedF1) {
                 maxSpeedF1 = speed;
             }
-            cumulativeSpeedF1 = cumulativeSpeedF1 + speed;
-            numericSpeedListF1.add(speed);
+            if (speed > 0.0) {
+                cumulativeSpeedF1 = cumulativeSpeedF1 + speed;
+            }
         }
 
-        Double avgSpeedF1 = cumulativeSpeedF1 / (speedListFront1.size());
+        Double avgSpeedF1 = RPMtoMPH(cumulativeSpeedF1 / (speedRight.size()));
+        maxSpeedF1 = RPMtoMPH(maxSpeedF1);
+        minSpeedF1 = RPMtoMPH(minSpeedF1);
 
         System.out.println("Average front-1 mph= " + avgSpeedF1);
         System.out.println("Minimum front-1 mph= " + minSpeedF1);
         System.out.println("Maximum front-1 mph= " + maxSpeedF1);
         System.out.println("");
     }
-*/
+
     public static LinkedList<LinkedList<String>> getByID(String id) {
         LinkedList<LinkedList<String>> sortedList = new LinkedList<LinkedList<String>>();
         for (LinkedList<String> line: data) {
