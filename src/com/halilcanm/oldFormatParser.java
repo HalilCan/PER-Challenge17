@@ -1,6 +1,7 @@
 package com.halilcanm;
 
 import java.io.File;
+import java.nio.ByteBuffer;
 import java.util.*;
 
 public class oldFormatParser {
@@ -24,6 +25,10 @@ public class oldFormatParser {
         scanner.close();
         // Working getByID example:
         System.out.println(getByID("0x222"));
+
+        byte[] b = new byte[]{217, 184, 130, 65};
+        float f = ByteBuffer.wrap(b).getFloat();
+        System.out.println();
         //getSpeedData();
         //getPowerData();
     }
