@@ -29,6 +29,7 @@ public class oldFormatParser {
         byte[] b = new byte[]{217, 184, 130, 65};
         float f = ByteBuffer.wrap(b).getFloat();
         System.out.println();
+
         //getSpeedData();
         //getPowerData();
     }
