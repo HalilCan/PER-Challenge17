@@ -2,7 +2,11 @@ package com.halilcanm;
 
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.sql.Time;
 import java.util.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
 import static java.lang.Integer.max;
 import static java.lang.Integer.parseUnsignedInt;
@@ -30,10 +34,12 @@ public class oldFormatParser {
         scanner.close();
         // Working getByID example: System.out.println(getByID("0x222"));
         // Working parseLittleEndian example:
-        System.out.println("Previous example:" + parseLittleEndian("[ 217, 184, 130, 65, 122, 175, 137, 65]"));
+        // System.out.println("Previous example:" + parseLittleEndian("[ 217, 184, 130, 65, 122, 175, 137, 65]"));
         // Working getById to get data: System.out.println(getByID("0x222").getLast().get(4));
         // Working getById + parseL.E. System.out.println(parseLittleEndian(getByID("0x222").get(2090).get(4)));
-        getSpeedData();
+        // etSpeedData();
+        // getSeconds("13:12:10.023");
+        getPowerData();
     }
 
     public static ArrayList<Double> parseLittleEndian(String endian) {
@@ -128,47 +134,119 @@ public class oldFormatParser {
         return tireCircumferenceMiles * RPM * 60;
     }
 
+    public static Double getSeconds (String time) {
+        String h = time.substring(0,2);
+        String m = time.substring(3,5);
+        String s = time.substring(6,12);
+
+        Double hd = Double.valueOf(h) * 3600.0;
+        Double md = Double.valueOf(m) * 60.0;
+        Double sd = Double.valueOf(s);
+        Double totalSeconds = hd + md + sd;
+        return totalSeconds;
+    }
+
     public static LinkedList<String> parseLine (String cvsLine) {
         return parseLine(cvsLine, DEFAULT_SEPARATOR);
     }
 
-    /*
     public static void getPowerData() {
-        String currentAddress = "170";
-        String voltageAddress = "172";
-        String powerAddress = "173";
+        String currentAddress = "0x311";
+        String voltageAddress = "0x313";
 
         Double init_power = 0.0;
         Double initial_time_difference = 0.0;
+        Double zero_time = getSeconds(data.getFirst().get(0));
 
-        LinkedList<List<String>> powerList = getByID("173");
-        LinkedList<Double> numPowerList = new LinkedList<>();
-        LinkedList<Double> numTimeDifferenceList = new LinkedList<>();
-        LinkedList<Double> trapezoids = new LinkedList<>();
+        LinkedList<LinkedList<String>> currentList = getByID(currentAddress);
+        LinkedList<LinkedList<String>> voltageList = getByID(voltageAddress);
 
-        Double prevPower = 0.0;
+        LinkedList<Double> numTimeDifferenceListC = new LinkedList<>();
+        LinkedList<Double> currentTrapezoids = new LinkedList<>();
 
-        for (List<String> line : powerList) {
-            Double power = Double.parseDouble(line.get(2));
-            Double absTime = Double.parseDouble(line.get(0));
+        LinkedList<Double> numCurrentList = new LinkedList<>();
+        Double prevCurrent = 0.0;
+
+        //integrate current over time here
+        for (List<String> line : currentList) {
+            Double current = parseLittleEndian(line.get(4)).get(0);
+            Double absTime = getSeconds(line.get(0)) - zero_time;
             Double timeDiff = 0.0;
 
-            numPowerList.add(power);
+            numCurrentList.add(current);
 
-            if (numTimeDifferenceList.size() < 1 || numTimeDifferenceList.isEmpty()) {
-                numTimeDifferenceList.add(absTime);
+            if (numTimeDifferenceListC.size() < 1 || numTimeDifferenceListC.isEmpty()) {
+                numTimeDifferenceListC.add(absTime);
                 timeDiff = absTime;
             } else {
-                timeDiff = absTime - numTimeDifferenceList.get(numTimeDifferenceList.size()-1);
-                numTimeDifferenceList.add(timeDiff);
+                timeDiff = absTime - numTimeDifferenceListC.get(numTimeDifferenceListC.size()-1);
+                numTimeDifferenceListC.add(timeDiff);
             }
 
-            trapezoids.add(((power - prevPower) * timeDiff / 2.0) + (prevPower * timeDiff / 2));
-            prevPower = power;
+            currentTrapezoids.add(((current - prevCurrent) * timeDiff / 2.0) + (prevCurrent * timeDiff / 2));
+            prevCurrent = current;
         }
 
-        Double totalPower = sumAll(trapezoids) / 1000000000.0;
-        System.out.println("Total Power kWh= " + totalPower);
+        Double totalCurrent = sumAll(currentTrapezoids);
+        System.out.println("Total current= " + totalCurrent);
+
+        LinkedList<Double> numTimeDifferenceListV = new LinkedList<>();
+        LinkedList<Double> voltageTrapezoids = new LinkedList<>();
+
+        LinkedList<Double> numVoltageList = new LinkedList<>();
+        Double prevVoltage = 0.0;
+
+        //integrate voltage over time here
+        for (List<String> line : voltageList) {
+            Double voltage = parseLittleEndian(line.get(4)).get(0);
+            Double absTime = getSeconds(line.get(0)) - zero_time;
+            Double timeDiff = 0.0;
+
+            numVoltageList.add(voltage);
+
+            if (numTimeDifferenceListV.size() < 1 || numTimeDifferenceListV.isEmpty()) {
+                numTimeDifferenceListV.add(absTime);
+                timeDiff = absTime;
+            } else {
+                timeDiff = absTime - numTimeDifferenceListV.get(numTimeDifferenceListV.size()-1);
+                numTimeDifferenceListV.add(timeDiff);
+            }
+            voltageTrapezoids.add(((voltage - prevVoltage) * timeDiff / 2.0) + (prevVoltage * timeDiff / 2));
+            prevVoltage= voltage;
+        }
+
+        Double totalVoltage = sumAll(voltageTrapezoids);
+        System.out.println("Total voltage= " + totalVoltage);
+
+        Double totalPower = (totalCurrent * totalVoltage) / 1000000000000.0;
+        System.out.println("Total power= " + totalPower);
+
+        LinkedList<Double> powerTrapezoids2 = new LinkedList<Double>();
+        Double prevPower2 = 0.0;
+
+        LinkedList<Double> numTimeDifferenceListC2 = new LinkedList<>();
+
+        for (List<String> line : currentList) {
+            Double current = parseLittleEndian(line.get(4)).get(0);;
+            Double absTime = getSeconds(line.get(0)) - zero_time;
+            Double voltage = parseLittleEndian(voltageList.removeFirst().get(4)).get(0);
+            Double power = current * voltage;
+            Double timeDiff = 0.0;
+
+            if (numTimeDifferenceListC2.size() < 1 || numTimeDifferenceListC2.isEmpty()) {
+                numTimeDifferenceListC2.add(absTime);
+                timeDiff = absTime;
+            } else {
+                timeDiff = absTime - numTimeDifferenceListC2.get(numTimeDifferenceListC2.size()-1);
+                numTimeDifferenceListC2.add(timeDiff);
+            }
+
+            powerTrapezoids2.add(((power - prevPower2) * timeDiff / 2.0) + (prevPower2 * timeDiff / 2));
+            prevPower2 = power;
+        }
+
+        Double totalPower2 = sumAll(powerTrapezoids2);
+        System.out.println("Total power alternative: " + totalPower2);
     }
 
     public static Double sumAll(LinkedList<Double> traps) {
@@ -179,7 +257,6 @@ public class oldFormatParser {
         return sum;
     }
 
-    */
     public static void getSpeedData() {
         LinkedList<LinkedList<String>> speedList = getByID("0x222");
         LinkedList<Double> speedLeft = new LinkedList<Double>();
@@ -243,7 +320,10 @@ public class oldFormatParser {
     public static LinkedList<LinkedList<String>> getByID(String id) {
         LinkedList<LinkedList<String>> sortedList = new LinkedList<LinkedList<String>>();
         for (LinkedList<String> line: data) {
-            if ((line.get(2)+line.get(1)).equals(id)) {
+            String right = line.get(2).substring(2);
+            String left = line.get(1);
+            String construct = "0x" + left + right;
+            if (construct.equals(id)) {
                 sortedList.add(line);
             }
         }
