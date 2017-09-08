@@ -228,7 +228,7 @@ public class oldFormatParser {
 
         Double totalPower = (totalCurrent * totalVoltage) / (numTimeDifferenceListV.getLast()-numTimeDifferenceListV
                 .getFirst()) / 3000000.0;
-        System.out.println("Total power= " + totalPower);
+        System.out.println("Total power kWh= " + totalPower);
 
         LinkedList<Double> powerTrapezoids2 = new LinkedList<Double>();
         Double prevPower2 = 0.0;
@@ -256,7 +256,7 @@ public class oldFormatParser {
         }
 
         Double totalPower2 = sumAll(powerTrapezoids2) / 3000000.0;
-        System.out.println("Total power from node by node calculation: " + totalPower2);
+        System.out.println("Total power from node by node calculation kWh: " + totalPower2);
     }
 
     public static void printXGraph(Double d) {
