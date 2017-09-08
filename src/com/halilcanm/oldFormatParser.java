@@ -20,6 +20,7 @@ public class oldFormatParser {
     //linkedlist because it's faster to add a new element
 
     public static void main(String ... args) throws Exception {
+        //Insert
         String oldFile ="20150620_13_59_09_349_0_old";
 
         Scanner scanner = new Scanner(new File(oldFile));
@@ -37,8 +38,16 @@ public class oldFormatParser {
         // System.out.println("Previous example:" + parseLittleEndian("[ 217, 184, 130, 65, 122, 175, 137, 65]"));
         // Working getById to get data: System.out.println(getByID("0x222").getLast().get(4));
         // Working getById + parseL.E. System.out.println(parseLittleEndian(getByID("0x222").get(2090).get(4)));
-        //getSpeedData();
         // getSeconds("13:12:10.023");
+
+
+        // The two functions below will output a speed graph, speed data, and power data. I put together the graph
+        // because I was having problems with getting the actual speed. It helped me realize I had mistaken diameter
+        // for radius.
+
+        // The power data is inaccurate. My working theory is that the integration is wrong. However, I do not yet know.
+
+        getSpeedData();
         getPowerData();
     }
 
@@ -147,6 +156,8 @@ public class oldFormatParser {
     }
 
     public static void getPowerData() {
+        System.out.println("SPEED DATA ABOVE:");
+        System.out.println("POWER DATA BELOW:");
         String currentAddress = "0x311";
         String voltageAddress = "0x313";
 
@@ -251,7 +262,7 @@ public class oldFormatParser {
         d = Math.floor(d);
         while (d > 0) {
             System.out.print("x");
-            d  = d - 5;
+            d  = d - 2;
         }
         System.out.println("");
     }

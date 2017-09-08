@@ -10,6 +10,7 @@ public class csvParser {
     //linkedlist because it's faster to add a new element
 
     public static void main(String ... args) throws Exception {
+        //Insert relative address of the csv file here
         String csvFile ="end2016.csv";
 
         Scanner scanner = new Scanner(new File(csvFile));
