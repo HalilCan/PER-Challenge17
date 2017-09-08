@@ -131,8 +131,8 @@ public class csvParser {
 
         Double totalVoltage = sumAll(voltageTrapezoids);
 
-        Double totalPower = totalVoltage * totalCurrent / (numVTimeDifferenceList.getLast() - numVTimeDifferenceList
-                .getFirst());
+        Double totalPower = (totalVoltage * totalCurrent / (numVTimeDifferenceList.getLast() - numVTimeDifferenceList
+                .getFirst())) / 2000000000.0 ;
 
         System.out.println("Total integrated voltage= " + totalVoltage);
         System.out.println("Total integrated current= " + totalCurrent);
@@ -162,7 +162,7 @@ public class csvParser {
             prevPower2 = power;
         }
 
-        Double totalPower2 = sumAll(powerTrapezoids2);
+        Double totalPower2 = sumAll(powerTrapezoids2) / 2000000000.0;
 
         System.out.println("Total Power from node by node calculation kWh= " + totalPower2);
     }
