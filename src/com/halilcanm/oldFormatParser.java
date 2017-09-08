@@ -43,7 +43,8 @@ public class oldFormatParser {
 
         // The two functions below will output a speed graph, speed data, and power data. I put together the graph
         // because I was having problems with getting the actual speed. It helped me realize I had mistaken diameter
-        // for radius.
+        // for radius. The graphing function might exceed your console's line limit. That is because I just wanted to
+        // see fitting behavior.
 
         // The power data is inaccurate. My working theory is that the integration is wrong. However, I do not yet know.
 
@@ -195,7 +196,7 @@ public class oldFormatParser {
         }
 
         Double totalCurrent = sumAll(currentTrapezoids);
-        System.out.println("Total current= " + totalCurrent);
+        System.out.println("Integrated current= " + totalCurrent);
 
         LinkedList<Double> numTimeDifferenceListV = new LinkedList<>();
         LinkedList<Double> voltageTrapezoids = new LinkedList<>();
@@ -223,10 +224,10 @@ public class oldFormatParser {
         }
 
         Double totalVoltage = sumAll(voltageTrapezoids);
-        System.out.println("Total voltage= " + totalVoltage);
+        System.out.println("Integrated voltage= " + totalVoltage);
 
         Double totalPower = (totalCurrent * totalVoltage) / (numTimeDifferenceListV.getLast()-numTimeDifferenceListV
-                .getFirst());
+                .getFirst()) / 3000000.0;
         System.out.println("Total power= " + totalPower);
 
         LinkedList<Double> powerTrapezoids2 = new LinkedList<Double>();
@@ -254,8 +255,8 @@ public class oldFormatParser {
             prevPower2 = power;
         }
 
-        Double totalPower2 = sumAll(powerTrapezoids2);
-        System.out.println("Total power alternative: " + totalPower2);
+        Double totalPower2 = sumAll(powerTrapezoids2) / 3000000.0;
+        System.out.println("Total power from node by node calculation: " + totalPower2);
     }
 
     public static void printXGraph(Double d) {
