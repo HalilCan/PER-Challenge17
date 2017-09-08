@@ -19,18 +19,6 @@ public class oldFormatParser {
     private static LinkedList<LinkedList<String>> data = new LinkedList<LinkedList<String>>();
     //linkedlist because it's faster to add a new element
 
-    public static void runAnalysis() {
-        // The two functions below will output a speed graph, speed data, and power data. I put together the graph
-        // because I was having problems with getting the actual speed. It helped me realize I had mistaken diameter
-        // for radius. The graphing function might exceed your console's line limit. That is because I just wanted to
-        // see fitting behavior.
-
-        // The power data is inaccurate. My working theory is that the integration is wrong. However, I do not yet know.
-
-        getSpeedData();
-        getPowerData();
-    }
-
     public static void main(String ... args) throws Exception {
         //Insert
         String oldFile ="20150620_13_59_09_349_0_old";
@@ -51,6 +39,17 @@ public class oldFormatParser {
         // Working getById to get data: System.out.println(getByID("0x222").getLast().get(4));
         // Working getById + parseL.E. System.out.println(parseLittleEndian(getByID("0x222").get(2090).get(4)));
         // getSeconds("13:12:10.023");
+
+
+        // The two functions below will output a speed graph, speed data, and power data. I put together the graph
+        // because I was having problems with getting the actual speed. It helped me realize I had mistaken diameter
+        // for radius. The graphing function might exceed your console's line limit. That is because I just wanted to
+        // see fitting behavior.
+
+        // The power data is inaccurate. My working theory is that the integration is wrong. However, I do not yet know.
+
+        getSpeedData();
+        getPowerData();
     }
 
     public static ArrayList<Double> parseLittleEndian(String endian) {

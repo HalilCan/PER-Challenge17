@@ -1,5 +1,6 @@
 Required: What’s the easiest way for me to compile and test your code?
-    If you have an IDE that can compile JAVA files, I've included the files that you can just drag&drop.
+    I've included both the JAVA and JAR files. You can execute the JAR files from the terminal or console with 'java
+    -jar app.jar'
 
 • Required: A description of what you could accomplish and what you learned.
     I think I safely got the speed data on both the old format and the csv format.
