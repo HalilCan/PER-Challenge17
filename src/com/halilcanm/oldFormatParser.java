@@ -37,7 +37,7 @@ public class oldFormatParser {
         // System.out.println("Previous example:" + parseLittleEndian("[ 217, 184, 130, 65, 122, 175, 137, 65]"));
         // Working getById to get data: System.out.println(getByID("0x222").getLast().get(4));
         // Working getById + parseL.E. System.out.println(parseLittleEndian(getByID("0x222").get(2090).get(4)));
-        // etSpeedData();
+        //getSpeedData();
         // getSeconds("13:12:10.023");
         getPowerData();
     }
@@ -121,15 +121,11 @@ public class oldFormatParser {
         return result;
     }
 
-    /*public static String resolveID (String key) {
-        //Keys need to have leading spaces right now
-        return idTable.get(key).toString();
-    } */
-
     public static Double RPMtoMPH (Double RPM) {
         Double tireDiameterInches = 19.5;
-        Double tireCircumferenceInches = 122.5;
-        Double tireCircumferenceMiles = 0.0019334;
+        //IT'S DIAMETER NOT RADIUS GODDAMMIT
+        Double tireCircumferenceInches = 122.5 / 2.0;
+        Double tireCircumferenceMiles = 0.0009667;
 
         return tireCircumferenceMiles * RPM * 60;
     }
@@ -180,10 +176,10 @@ public class oldFormatParser {
                 timeDiff = absTime;
             } else {
                 timeDiff = absTime - numTimeDifferenceListC.get(numTimeDifferenceListC.size()-1);
-                numTimeDifferenceListC.add(timeDiff);
+                numTimeDifferenceListC.add(absTime);
             }
 
-            currentTrapezoids.add(((current - prevCurrent) * timeDiff / 2.0) + (prevCurrent * timeDiff / 2));
+            currentTrapezoids.add((current + prevCurrent) * timeDiff / 2.0);
             prevCurrent = current;
         }
 
@@ -209,16 +205,17 @@ public class oldFormatParser {
                 timeDiff = absTime;
             } else {
                 timeDiff = absTime - numTimeDifferenceListV.get(numTimeDifferenceListV.size()-1);
-                numTimeDifferenceListV.add(timeDiff);
+                numTimeDifferenceListV.add(absTime);
             }
-            voltageTrapezoids.add(((voltage - prevVoltage) * timeDiff / 2.0) + (prevVoltage * timeDiff / 2));
+            voltageTrapezoids.add((voltage + prevVoltage) * timeDiff / 2.0);
             prevVoltage= voltage;
         }
 
         Double totalVoltage = sumAll(voltageTrapezoids);
         System.out.println("Total voltage= " + totalVoltage);
 
-        Double totalPower = (totalCurrent * totalVoltage) / 1000000000000.0;
+        Double totalPower = (totalCurrent * totalVoltage) / (numTimeDifferenceListV.getLast()-numTimeDifferenceListV
+                .getFirst());
         System.out.println("Total power= " + totalPower);
 
         LinkedList<Double> powerTrapezoids2 = new LinkedList<Double>();
@@ -238,15 +235,25 @@ public class oldFormatParser {
                 timeDiff = absTime;
             } else {
                 timeDiff = absTime - numTimeDifferenceListC2.get(numTimeDifferenceListC2.size()-1);
-                numTimeDifferenceListC2.add(timeDiff);
+                // the problem might be here: change .add from timeDiff to absTime, otherwise it seems too large a diff
+                numTimeDifferenceListC2.add(absTime);
             }
-
-            powerTrapezoids2.add(((power - prevPower2) * timeDiff / 2.0) + (prevPower2 * timeDiff / 2));
+            //dammit I put an extra 2.0 divisor in the pp2*tD  It doesn't have to be a rectangle!
+            powerTrapezoids2.add((power + prevPower2) * timeDiff / 2.0);
             prevPower2 = power;
         }
 
         Double totalPower2 = sumAll(powerTrapezoids2);
         System.out.println("Total power alternative: " + totalPower2);
+    }
+
+    public static void printXGraph(Double d) {
+        d = Math.floor(d);
+        while (d > 0) {
+            System.out.print("x");
+            d  = d - 5;
+        }
+        System.out.println("");
     }
 
     public static Double sumAll(LinkedList<Double> traps) {
@@ -272,44 +279,45 @@ public class oldFormatParser {
         Double cumulativeSpeedF0 = 0.0;
 
         for (Double speed: speedLeft) {
-            if (speed < minSpeedF0 && speed > 0.1) {
-                minSpeedF0 = speed;
+            printXGraph(RPMtoMPH(speed));
+            if (RPMtoMPH(speed) < minSpeedF0 && speed > 0.1) {
+                minSpeedF0 = RPMtoMPH(speed);
             }
-            if (speed > maxSpeedF0) {
-                maxSpeedF0 = speed;
+            if (RPMtoMPH(speed) > maxSpeedF0) {
+                maxSpeedF0 = RPMtoMPH(speed);
             }
             if (speed > 0.0) {
-                cumulativeSpeedF0 = cumulativeSpeedF0 + speed;
+                cumulativeSpeedF0 = cumulativeSpeedF0 + RPMtoMPH(speed);
             }
         }
 
-        Double avgSpeedF0 = RPMtoMPH(cumulativeSpeedF0 / (speedLeft.size()));
-        maxSpeedF0 = RPMtoMPH(maxSpeedF0);
-        minSpeedF0 = RPMtoMPH(minSpeedF0);
+        Double avgSpeedF0 = cumulativeSpeedF0 / speedLeft.size();
+        //maxSpeedF0 = RPMtoMPH(maxSpeedF0);
+        //minSpeedF0 = RPMtoMPH(minSpeedF0);
 
         System.out.println("Average front-0 mph= " + avgSpeedF0);
         System.out.println("Minimum front-0 mph= " + minSpeedF0);
         System.out.println("Maximum front-0 mph= " + maxSpeedF0);
 
-        Double minSpeedF1 = 100000.0;
+        Double minSpeedF1 = 1000000.0;
         Double maxSpeedF1 = 0.0;
         Double cumulativeSpeedF1 = 0.0;
 
         for (Double speed: speedRight) {
-            if (speed < minSpeedF1 && speed > 0.1) {
-                minSpeedF1 = speed;
+            if (RPMtoMPH(speed) < minSpeedF1 && speed > 0.1) {
+                minSpeedF1 = RPMtoMPH(speed);
             }
-            if (speed > maxSpeedF1) {
-                maxSpeedF1 = speed;
+            if (RPMtoMPH(speed) > maxSpeedF1) {
+                maxSpeedF1 = RPMtoMPH(speed);
             }
             if (speed > 0.0) {
-                cumulativeSpeedF1 = cumulativeSpeedF1 + speed;
+                cumulativeSpeedF1 = cumulativeSpeedF1 + RPMtoMPH(speed);
             }
         }
 
-        Double avgSpeedF1 = RPMtoMPH(cumulativeSpeedF1 / (speedRight.size()));
-        maxSpeedF1 = RPMtoMPH(maxSpeedF1);
-        minSpeedF1 = RPMtoMPH(minSpeedF1);
+        Double avgSpeedF1 = cumulativeSpeedF1 / (speedRight.size());
+        //maxSpeedF1 = RPMtoMPH(maxSpeedF1);
+        //minSpeedF1 = RPMtoMPH(minSpeedF1);
 
         System.out.println("Average front-1 mph= " + avgSpeedF1);
         System.out.println("Minimum front-1 mph= " + minSpeedF1);

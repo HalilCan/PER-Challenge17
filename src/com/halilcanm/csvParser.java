@@ -97,14 +97,14 @@ public class csvParser {
                 timeDiff = absTime;
             } else {
                 timeDiff = absTime - numCTimeDifferenceList.get(numCTimeDifferenceList.size()-1);
-                numCTimeDifferenceList.add(timeDiff);
+                numCTimeDifferenceList.add(absTime);
             }
 
-            currentTrapezoids.add(((current - prevCurrent) * timeDiff / 2.0) + (prevCurrent * timeDiff / 2));
+            currentTrapezoids.add ((current + prevCurrent) * timeDiff / 2.0);
             prevCurrent = current;
         }
 
-        Double totalCurrent = sumAll(currentTrapezoids) / 1000000000.0;
+        Double totalCurrent = sumAll(currentTrapezoids);
 
         Double prevVoltage = 0.0;
 
@@ -120,16 +120,17 @@ public class csvParser {
                 timeDiff = absTime;
             } else {
                 timeDiff = absTime - numVTimeDifferenceList.get(numVTimeDifferenceList.size()-1);
-                numVTimeDifferenceList.add(timeDiff);
+                numVTimeDifferenceList.add(absTime);
             }
 
-            voltageTrapezoids.add(((voltage - prevVoltage) * timeDiff / 2.0) + (prevVoltage * timeDiff / 2));
+            voltageTrapezoids.add ((voltage + prevVoltage) * timeDiff / 2.0);
             prevVoltage = voltage;
         }
 
-        Double totalVoltage = sumAll(voltageTrapezoids) / 1000000000.0;
+        Double totalVoltage = sumAll(voltageTrapezoids);
 
-        Double totalPower = totalVoltage * totalCurrent / 1000.0;
+        Double totalPower = totalVoltage * totalCurrent / (numVTimeDifferenceList.getLast() - numVTimeDifferenceList
+                .getFirst());
 
         System.out.println("Total integrated voltage= " + totalVoltage);
         System.out.println("Total integrated current= " + totalCurrent);
@@ -151,14 +152,14 @@ public class csvParser {
                 timeDiff = absTime;
             } else {
                 timeDiff = absTime - numCTimeDifferenceList.get(numCTimeDifferenceList.size()-1);
-                numCTimeDifferenceList.add(timeDiff);
+                numCTimeDifferenceList.add(absTime);
             }
 
-            powerTrapezoids2.add(((power - prevPower2) * timeDiff / 2.0) + (prevPower2 * timeDiff / 2));
+            powerTrapezoids2.add ((power + prevPower2) * timeDiff / 2.0);
             prevPower2 = power;
         }
 
-        Double totalPower2 = sumAll(powerTrapezoids2) / 1000000000000.0;
+        Double totalPower2 = sumAll(powerTrapezoids2);
 
         System.out.println("Total Power from node by node calculation kWh= " + totalPower2);
     }
