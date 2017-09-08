@@ -89,12 +89,13 @@ public class csvParser {
             Double current = Double.parseDouble(line.get(2));
             Double absTime = Double.parseDouble(line.get(0));
             Double timeDiff = 0.0;
+            Double zeroTime = Double.parseDouble(data.getFirst().get(0));
 
             numCurrentList.add(current);
 
             if (numCTimeDifferenceList.size() < 1 || numCTimeDifferenceList.isEmpty()) {
                 numCTimeDifferenceList.add(absTime);
-                timeDiff = absTime;
+                timeDiff = absTime - zeroTime;
             } else {
                 timeDiff = absTime - numCTimeDifferenceList.get(numCTimeDifferenceList.size()-1);
                 numCTimeDifferenceList.add(absTime);
@@ -112,12 +113,13 @@ public class csvParser {
             Double voltage = Double.parseDouble(line.get(2));
             Double absTime = Double.parseDouble(line.get(0));
             Double timeDiff = 0.0;
+            Double zeroTime = Double.parseDouble(data.getFirst().get(0));
 
             numCurrentList.add(voltage);
 
             if (numVTimeDifferenceList.size() < 1 || numVTimeDifferenceList.isEmpty()) {
                 numVTimeDifferenceList.add(absTime);
-                timeDiff = absTime;
+                timeDiff = absTime - zeroTime;
             } else {
                 timeDiff = absTime - numVTimeDifferenceList.get(numVTimeDifferenceList.size()-1);
                 numVTimeDifferenceList.add(absTime);
@@ -145,11 +147,12 @@ public class csvParser {
             Double absTime = Double.parseDouble(line.get(0));
             Double voltage = Double.parseDouble(voltageList.removeFirst().get(2));
             Double power = current * voltage;
+            Double zeroTime = Double.parseDouble(data.getFirst().get(0));
             Double timeDiff = 0.0;
 
             if (numCTimeDifferenceList.size() < 1 || numCTimeDifferenceList.isEmpty()) {
                 numCTimeDifferenceList.add(absTime);
-                timeDiff = absTime;
+                timeDiff = absTime - zeroTime;
             } else {
                 timeDiff = absTime - numCTimeDifferenceList.get(numCTimeDifferenceList.size()-1);
                 numCTimeDifferenceList.add(absTime);
