@@ -238,7 +238,9 @@ public class oldFormatParser {
         for (List<String> line : currentList) {
             Double current = parseLittleEndian(line.get(4)).get(0);;
             Double absTime = getSeconds(line.get(0)) - zero_time;
-            Double voltage = parseLittleEndian(voltageList.removeFirst().get(4)).get(0);
+
+            Double voltage = getMatchingVoltage(line, voltageList);
+            System.out.println(voltage);
             Double power = current * voltage;
             Double timeDiff = 0.0;
 
@@ -255,18 +257,39 @@ public class oldFormatParser {
             prevPower2 = power;
         }
 
-        Double totalPower2 = sumAll(powerTrapezoids2) / 3000000.0;
+        Double totalPower2 = sumAll(powerTrapezoids2);
         System.out.println("Total power from node by node calculation kWh: " + totalPower2);
     }
 
+
+    public static Double getMatchingVoltage(List<String> line, LinkedList<LinkedList<String>> vList) {
+
+        Double lineTime = getSeconds(line.get(0));
+
+        for (List<String> voltageLine : vList) {
+            System.out.println("CHECK");
+            Double voltage = parseLittleEndian(voltageLine.get(4)).get(0);
+            Double absTime = getSeconds(voltageLine.get(0));
+            System.out.println(absTime);
+            if (lineTime > absTime - 100.0 && lineTime < absTime + 100.0 ) {
+                return voltage;
+            }
+            if (lineTime > absTime + 10000000.0) {
+                return 0.0;
+            }
+            if (lineTime < absTime - 10000.0) {
+                continue;
+            }
+        }
+        return 0.0;
+    }
+
     public static void printXGraph(Double d) {
-        System.out.println("GRAPH BEGIN");
         d = Math.floor(d);
         while (d > 0) {
             System.out.print("x");
             d  = d - 2;
         }
-        System.out.println("GRAPH END");
         System.out.println("");
     }
 
@@ -293,7 +316,7 @@ public class oldFormatParser {
         Double cumulativeSpeedF0 = 0.0;
 
         for (Double speed: speedLeft) {
-            printXGraph(RPMtoMPH(speed));
+            //printXGraph(RPMtoMPH(speed));
             if (RPMtoMPH(speed) < minSpeedF0 && speed > 0.1) {
                 minSpeedF0 = RPMtoMPH(speed);
             }
