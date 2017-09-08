@@ -314,7 +314,7 @@ public class oldFormatParser {
         Double cumulativeSpeedF0 = 0.0;
 
         for (Double speed: speedLeft) {
-            //printXGraph(RPMtoMPH(speed));
+            printXGraph(RPMtoMPH(speed));
             if (RPMtoMPH(speed) < minSpeedF0 && speed > 0.1) {
                 minSpeedF0 = RPMtoMPH(speed);
             }
