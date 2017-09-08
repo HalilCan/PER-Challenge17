@@ -260,11 +260,13 @@ public class oldFormatParser {
     }
 
     public static void printXGraph(Double d) {
+        System.out.println("GRAPH BEGIN");
         d = Math.floor(d);
         while (d > 0) {
             System.out.print("x");
             d  = d - 2;
         }
+        System.out.println("GRAPH END");
         System.out.println("");
     }
 
