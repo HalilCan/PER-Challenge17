@@ -227,7 +227,7 @@ public class oldFormatParser {
         System.out.println("Integrated voltage= " + totalVoltage);
 
         Double totalPower = (totalCurrent * totalVoltage) / (numTimeDifferenceListV.getLast()-numTimeDifferenceListV
-                .getFirst()) / 3000000.0;
+                .getFirst());
         System.out.println("Total power kWh= " + totalPower);
 
         LinkedList<Double> powerTrapezoids2 = new LinkedList<Double>();
@@ -240,7 +240,6 @@ public class oldFormatParser {
             Double absTime = getSeconds(line.get(0)) - zero_time;
 
             Double voltage = getMatchingVoltage(line, voltageList);
-            System.out.println(voltage);
             Double power = current * voltage;
             Double timeDiff = 0.0;
 
@@ -258,7 +257,8 @@ public class oldFormatParser {
         }
 
         Double totalPower2 = sumAll(powerTrapezoids2);
-        System.out.println("Total power from node by node calculation kWh: " + totalPower2);
+        System.out.println("Total power from point by point calculation (+ matching time signature security) kWh: " +
+                totalPower2);
     }
 
 
@@ -267,18 +267,16 @@ public class oldFormatParser {
         Double lineTime = getSeconds(line.get(0));
 
         for (List<String> voltageLine : vList) {
-            System.out.println("CHECK");
-            Double voltage = parseLittleEndian(voltageLine.get(4)).get(0);
             Double absTime = getSeconds(voltageLine.get(0));
-            System.out.println(absTime);
-            if (lineTime > absTime - 100.0 && lineTime < absTime + 100.0 ) {
-                return voltage;
-            }
-            if (lineTime > absTime + 10000000.0) {
-                return 0.0;
-            }
             if (lineTime < absTime - 10000.0) {
                 continue;
+            }
+            if (lineTime > absTime + 10000000.0) {
+                break;
+            }
+            Double voltage = parseLittleEndian(voltageLine.get(4)).get(0);
+            if (lineTime > absTime - 100.0 && lineTime < absTime + 100.0 ) {
+                return voltage;
             }
         }
         return 0.0;
