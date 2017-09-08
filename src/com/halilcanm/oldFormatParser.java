@@ -227,8 +227,8 @@ public class oldFormatParser {
         System.out.println("Integrated voltage= " + totalVoltage);
 
         Double totalPower = (totalCurrent * totalVoltage) / (numTimeDifferenceListV.getLast()-numTimeDifferenceListV
-                .getFirst());
-        System.out.println("Total power kWh= " + totalPower);
+                .getFirst()) / 3000000.0;
+        System.out.println("Total power kWh (first method)= " + totalPower);
 
         LinkedList<Double> powerTrapezoids2 = new LinkedList<Double>();
         Double prevPower2 = 0.0;
@@ -256,7 +256,7 @@ public class oldFormatParser {
             prevPower2 = power;
         }
 
-        Double totalPower2 = sumAll(powerTrapezoids2);
+        Double totalPower2 = sumAll(powerTrapezoids2) / 3000000.0;
         System.out.println("Total power from point by point calculation (+ matching time signature security) kWh: " +
                 totalPower2);
     }
